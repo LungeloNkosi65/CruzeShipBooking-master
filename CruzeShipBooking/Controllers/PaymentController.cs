@@ -1,5 +1,6 @@
-﻿using CruzeShipBooking.Services;
+﻿
 using CruzeShipBooking.Models;
+using CruzeShipBooking.Services;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using Microsoft.AspNet.Identity;
@@ -16,6 +17,7 @@ using System.Net.Mail;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using System.Xml.Linq;
 
 namespace CruzeShipBooking.Controllers
 {
@@ -23,9 +25,10 @@ namespace CruzeShipBooking.Controllers
     {
         private readonly ApplicationDbContext db = new ApplicationDbContext();
         private Order_Service order_Service;
+        private Payment_Service payment_Service;
 
 
-       
+
         // GET: Payment
         public ActionResult Index()
         {
@@ -50,6 +53,7 @@ namespace CruzeShipBooking.Controllers
                 NotifyUrl = ConfigurationManager.AppSettings["NotifyUrl"]
             };
             order_Service = new Order_Service();
+            payment_Service = new Payment_Service();
 
         }
 
@@ -106,7 +110,7 @@ namespace CruzeShipBooking.Controllers
             var customer = db.Customers.Where(x => x.Email == userName).FirstOrDefault();
 
             var attachments = new List<Attachment>();
-            attachments.Add(new Attachment(new MemoryStream(GeneratePDF(Order_ID)), "Order Receipt", "application/pdf"));
+            //attachments.Add(new Attachment(new MemoryStream(GeneratePDF(Order_ID)), "Order Receipt", "application/pdf"));
 
             var mailTo = new List<MailAddress>();
             mailTo.Add(new MailAddress(User.Identity.GetUserName(), customer.FirstName));
@@ -123,85 +127,85 @@ namespace CruzeShipBooking.Controllers
                 mailAttachments = attachments
             });
         }
-        public byte[] GeneratePDF(string orderID)
-        {
-            MemoryStream memoryStream = new MemoryStream();
-            Document document = new Document(PageSize.A5, 0, 0, 0, 0);
-            PdfWriter writer = PdfWriter.GetInstance(document, memoryStream);
-            document.Open();
+        //public byte[] GeneratePDF(string orderID)
+        //{
+        //    MemoryStream memoryStream = new MemoryStream();
+        //    Document document = new XDocument(PageSize.A5, 0, 0, 0, 0);
+        //    PdfWriter writer = PdfWriter.GetInstance(document, memoryStream);
+        //    document.Open();
 
-            Order order = db.Orders.Find(orderID);
-            var userName = User.Identity.GetUserName();
-            /* Find the details of the customer placing the order*/
-            var customer = db.Customers.Where(x => x.Email == userName).FirstOrDefault();
-            Order_Item order_Item = db.Order_Items.Find(orderID);
+        //    Order order = db.Orders.Find(orderID);
+        //    var userName = User.Identity.GetUserName();
+        //    /* Find the details of the customer placing the order*/
+        //    var customer = db.Customers.Where(x => x.Email == userName).FirstOrDefault();
+        //    Order_Item order_Item = db.Order_Items.Find(orderID);
 
-            //var reservation = _iReservationService.Get(Convert.ToInt64(ReservationID));
-            //var user = _iUserService.Get(reservation.UserID);
+        //    //var reservation = _iReservationService.Get(Convert.ToInt64(ReservationID));
+        //    //var user = _iUserService.Get(reservation.UserID);
 
-            iTextSharp.text.Font font_heading_3 = FontFactory.GetFont(FontFactory.TIMES_ROMAN, 12, iTextSharp.text.Font.BOLD, iTextSharp.text.BaseColor.RED);
-            iTextSharp.text.Font font_body = FontFactory.GetFont(FontFactory.TIMES_ROMAN, 9, iTextSharp.text.BaseColor.BLUE);
+        //    iTextSharp.text.Font font_heading_3 = FontFactory.GetFont(FontFactory.TIMES_ROMAN, 12, iTextSharp.text.Font.BOLD, iTextSharp.text.BaseColor.RED);
+        //    iTextSharp.text.Font font_body = FontFactory.GetFont(FontFactory.TIMES_ROMAN, 9, iTextSharp.text.BaseColor.BLUE);
 
-            // Create the heading paragraph with the headig font
-            PdfPTable table1 = new PdfPTable(1);
-            PdfPTable table2 = new PdfPTable(5);
-            PdfPTable table3 = new PdfPTable(1);
+        //    // Create the heading paragraph with the headig font
+        //    PdfPTable table1 = new PdfPTable(1);
+        //    PdfPTable table2 = new PdfPTable(5);
+        //    PdfPTable table3 = new PdfPTable(1);
 
-            iTextSharp.text.pdf.draw.VerticalPositionMark seperator = new iTextSharp.text.pdf.draw.LineSeparator();
-            seperator.Offset = -6f;
-            // Remove table cell
-            table1.DefaultCell.Border = iTextSharp.text.Rectangle.NO_BORDER;
-            table3.DefaultCell.Border = iTextSharp.text.Rectangle.NO_BORDER;
+        //    iTextSharp.text.pdf.draw.VerticalPositionMark seperator = new iTextSharp.text.pdf.draw.LineSeparator();
+        //    seperator.Offset = -6f;
+        //    // Remove table cell
+        //    table1.DefaultCell.Border = iTextSharp.text.Rectangle.NO_BORDER;
+        //    table3.DefaultCell.Border = iTextSharp.text.Rectangle.NO_BORDER;
 
-            table1.WidthPercentage = 80;
-            table1.SetWidths(new float[] { 100 });
-            table2.WidthPercentage = 80;
-            table3.SetWidths(new float[] { 100 });
-            table3.WidthPercentage = 80;
+        //    table1.WidthPercentage = 80;
+        //    table1.SetWidths(new float[] { 100 });
+        //    table2.WidthPercentage = 80;
+        //    table3.SetWidths(new float[] { 100 });
+        //    table3.WidthPercentage = 80;
 
-            PdfPCell cell = new PdfPCell(new Phrase(""));
-            cell.Colspan = 3;
-            table1.AddCell("\n");
-            table1.AddCell(cell);
-            table1.AddCell("\n\n");
-            table1.AddCell(
-                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t" +
-                "Alliance Properties SA \n" +
-                "Email :Alliance.grp18@gmail.com" + "\n" +
-                "\n" + "\n");
-            table1.AddCell("------------Customer Details--------------!");
+        //    PdfPCell cell = new PdfPCell(new Phrase(""));
+        //    cell.Colspan = 3;
+        //    table1.AddCell("\n");
+        //    table1.AddCell(cell);
+        //    table1.AddCell("\n\n");
+        //    table1.AddCell(
+        //        "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t" +
+        //        "Alliance Properties SA \n" +
+        //        "Email :Alliance.grp18@gmail.com" + "\n" +
+        //        "\n" + "\n");
+        //    table1.AddCell("------------Customer Details--------------!");
 
-            table1.AddCell("First Name : \t" + customer.FirstName);
-            table1.AddCell("Last Name : \t" + customer.LastName);
-            table1.AddCell("Phone Number : \t" + customer.ContactNumber);
-            table1.AddCell("Address : \t" + customer.LastName);
+        //    table1.AddCell("First Name : \t" + customer.FirstName);
+        //    table1.AddCell("Last Name : \t" + customer.LastName);
+        //    table1.AddCell("Phone Number : \t" + customer.phone);
+        //    table1.AddCell("Address : \t" + customer.Address);
 
-            table1.AddCell("\n------------Order details--------------!\n");
+        //    table1.AddCell("\n------------Order details--------------!\n");
 
-            table1.AddCell("Order # : \t" + orderID);
-            table1.AddCell("Price : \t" + order_Item.price);
-            table1.AddCell("Qauntity : \t" + order_Item.quantity);
-            table1.AddCell("Items : \t" + order_Item.Item.Name);
-            //table1.AddCell("Building name : \t" + roomBooking.BuildingId);
-            //table1.AddCell("Building Address : \t" + roomBooking.BuildingAddress);
+        //    table1.AddCell("Order # : \t" + orderID);
+        //    table1.AddCell("Price : \t" + order_Item.price);
+        //    table1.AddCell("Qauntity : \t" + order_Item.quantity);
+        //    table1.AddCell("Items : \t" + order_Item.Item.Name);
+        //    //table1.AddCell("Building name : \t" + roomBooking.BuildingId);
+        //    //table1.AddCell("Building Address : \t" + roomBooking.BuildingAddress);
 
-            table1.AddCell("\n");
+        //    table1.AddCell("\n");
 
-            table3.AddCell("------------Looking forward to hear from you soon--------------!");
+        //    table3.AddCell("------------Looking forward to hear from you soon--------------!");
 
-            //////Intergrate information into 1 document
-            //var qrCode = iTextSharp.text.Image.GetInstance(roomBooking.QrCodeImage);
-            //qrCode.ScaleToFit(200, 200);
-            table1.AddCell(cell);
-            document.Add(table1);
-            //document.Add(qrCode);
-            document.Add(table3);
-            document.Close();
+        //    //////Intergrate information into 1 document
+        //    //var qrCode = iTextSharp.text.Image.GetInstance(roomBooking.QrCodeImage);
+        //    //qrCode.ScaleToFit(200, 200);
+        //    table1.AddCell(cell);
+        //    document.Add(table1);
+        //    //document.Add(qrCode);
+        //    document.Add(table3);
+        //    document.Close();
 
-            byte[] bytes = memoryStream.ToArray();
-            memoryStream.Close();
-            return bytes;
-        }
+        //    byte[] bytes = memoryStream.ToArray();
+        //    memoryStream.Close();
+        //    return bytes;
+        //}
 
 
 
@@ -209,6 +213,14 @@ namespace CruzeShipBooking.Controllers
         {
             var order = order_Service.GetOrder(id);
             var onceOffRequest = new PayFastRequest(this.payFastSettings.PassPhrase);
+            var payment = new Payment();
+            payment.AmountPaid = order_Service.GetOrderTotal(order.Order_ID);
+            payment.PaymentFor = order.Order_ID;
+            payment.PaymentMethod = "Pay Fast Payment";
+            payment.Email = User.Identity.GetUserName();
+            payment.Order_ID = order.Order_ID;
+            payment.Date = DateTime.Now;
+            payment_Service.AddPayment(payment);
             order_Service.MarkOrderAsPaid(id);
 
             //SendMail(id);

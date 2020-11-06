@@ -46,17 +46,27 @@
                         Track Order
                     </a>
                 </td>
+
+                @if (User.IsInRole("Customer") && Model.order.status == "Awaiting Payment")
+                {
+                    <td>
+                        <a href="@Url.Action("OnceOff","Payment",new {id = Model.order.Order_ID })" class="btn btn-success">
+                            Pay For Order
+                        </a>
+                    </td>
+                }
                 @if (!User.IsInRole("Customer"))
                 {
                     if (Model.order.status != "Delivered")
                     {
                         if (Model.order.status != "With courier" && Model.order.status == "Awaiting Payment" || Model.order.status == "At warehouse")
                         {
-    <td>
-        <a href="@Url.Action("Mark_As_Packed","Orders",new {id = Model.order.Order_ID })" class="btn btn-primary">
-            Mark as Packed
-        </a>
-    </td>}
+                            <td>
+                                <a href="@Url.Action("Mark_As_Packed","Orders",new {id = Model.order.Order_ID })" class="btn btn-primary">
+                                    Mark as Packed
+                                </a>
+                            </td>
+                        }
                     }
                 }
             </tr>

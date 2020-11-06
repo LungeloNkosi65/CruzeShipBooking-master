@@ -11,7 +11,6 @@ namespace CruzeShipBooking.Controllers
     {
         public ActionResult Index()
         {
-            var userName = User.Identity.GetUserName();
             return View();
         }
 
