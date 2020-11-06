@@ -1,0 +1,190 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @*<title>@ViewBag.Title - My ASP.NET Application</title>*@
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                @Html.ActionLink("Senorita Cruise", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+            </div>
+            @{ var department_Service = new CruzeShipBooking.Services.Department_Service();
+                var cart_Service = new CruzeShipBooking.Services.Cart_Service();
+                double total = 0;
+            }
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    @*<li>@Html.ActionLink("Home", "Index", "Home")</li>*@
+                    @if (User.IsInRole("Customer"))
+                    {
+
+        <li>@Html.ActionLink("My Details", "Index", "Customers")</li>
+                        <li>@Html.ActionLink(" My Bookings", "Index", "Bookings")</li>
+ if (User.Identity.IsAuthenticated == true)
+                        {
+        <li>@Html.ActionLink("My Details", "Index", "Customers")</li>
+                            <li>@Html.ActionLink("Order History", "Customer_Orders", "Orders")</li> }
+                            <li class="dropdown">
+                                <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="fa fa-list"></span> Shop by Category <span class="caret"></span></a>
+                                <ul class="dropdown-menu mega scrollable-menu">
+                                   
+                                        <li><a href="@Url.Action("Index","Shopping",new { id = 0})">All Departments</a></li>
+                                        @foreach (var department in department_Service.GetDepartments().OrderBy(x => x.Department_Name))
+                                        {
+                        <li>
+                            <a href="@Url.Action("Index","Shopping",new { id = department.Department_ID })">@department.Department_Name</a>
+                        </li>}
+                                </ul>
+                            </li>
+
+
+
+                                            <li class="dropdown">
+                                                <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <span class="fa fa-shopping-cart"></span> Cart (@Html.Action(actionName: "countCartItems", controllerName: "Shopping"))<span class="caret"></span></a>
+                                                <ul class="dropdown-menu mega">
+                                                    <ul class="sub-menu">
+                                                        <table class="table">
+                                                            <tr style="background: #f3f3f3;">
+                                                                <th>Item</th>
+                                                                <th>
+
+                                                                </th>
+                                                                <th style="text-align:center">
+                                                                    Quantity
+                                                                </th>
+                                                                <th>
+                                                                    Price
+                                                                </th>
+                                                                <th style="text-align:center">
+                                                                    Sub-Total
+                                                                </th>
+                                                            </tr>
+                                                            @if (cart_Service.GetCartItems().Count() == 0)
+                                                            {
+                                            <tr>
+                                                <th colspan="5" style="text-align:center">Your cart is empty</th>
+                                            </tr>}
+                                                            @foreach (var item in cart_Service.GetCartItems().OrderBy(x => x.Item.Name))
+                                                            {
+                                            <tr>
+                                                <td>
+                                                    @if (item.Item.Picture != null)
+                                                    {
+                                                        var base64 = Convert.ToBase64String(item.Item.Picture);
+                                                        var imgSrc = string.Format("data:image/gif;base64,{0}", base64);
+                                <img src="@imgSrc" width="30" height="30" />}
+                                                </td>
+                                                <td>
+                                                    <a href="@Url.Action("Details","Items", new { id=item.Item.ItemCode })">@item.Item.Name</a>
+                                                </td>
+                                                <td style="text-align:center">
+                                                    @item.quantity
+                                                </td>
+                                                <td>
+                                                    @item.Item.Price.ToString("C")
+                                                </td>
+                                                <td style="text-align:center">
+                                                    @{ var subtotal = item.quantity * item.Item.Price;
+                                                        total += subtotal; }
+
+                                                    @subtotal.ToString("C")
+                                                </td>
+                                            </tr>}
+                                                            <tr>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td style="text-align:center">
+                                                                    Total
+                                                                </td>
+                                                                <th style="text-align:center">
+                                                                    @total.ToString("C")
+                                                                </th>
+                                                            </tr>
+                                                            <tr>
+                                                                <td></td>
+                                                                <td>
+                                                                    <a class="btn btn-default" href="@Url.Action("Index","Shopping")">
+                                                                        <i class="fa fa-list"></i> Shop More
+                                                                    </a>
+
+                                                                </td>
+                                                                <td>
+                                                                    <a class="btn btn-default" href="@Url.Action("ShoppingCart", "Shopping")">
+                                                                        <i class="fa fa-shopping-cart"></i> View Cart
+                                                                    </a>
+                                                                </td>
+                                                                <td>
+                                                                    @if (cart_Service.GetCartItems().Count() == 0)
+                                                                    {
+                                                    <a class="btn btn-default disabled" href="@Url.Action("Checkout","Shopping")">
+                                                        <i class="fa fa-lock"></i> Checkout
+                                                    </a> }
+                                                else
+                                                {
+                                <a class="btn btn-default" href="@Url.Action("Checkout","Shopping")">
+                                    <i class="fa fa-lock"></i> Checkout
+                                </a>}
+
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </ul>
+                                                </ul>
+                                            </li>
+}
+
+                    @if (User.IsInRole("Admin"))
+                    {
+        <li>@Html.ActionLink("Booking Types", "Index", "BookingTypes")</li>
+                        <li>@Html.ActionLink("Booking Packages", "Index", "BookingPackages")</li>
+                                        <li>@Html.ActionLink("Bookings", "Index", "Bookings")</li>
+                                                        <li>@Html.ActionLink("Customer Details", "Index", "Customers")</li>
+
+
+                                                                        <li class="dropdown">
+                                                                            <a class="dropdown-toggle" role="button" aria-expanded="false" href="#" data-toggle="dropdown">Manage Shop<span class="caret"></span></a>
+                                                                            <ul class="dropdown-menu" role="menu">
+                                                                                <li>@Html.ActionLink("Add New Department", "Create", "Departments")</li>
+                                                                                <li>@Html.ActionLink("View all Departments", "Index", "Departments")</li>
+                                                                                <li>@Html.ActionLink("Add New Category", "Create", "Categories")</li>
+                                                                                <li>@Html.ActionLink("View all Categories", "Index", "Categories")</li>
+                                                                                <li>@Html.ActionLink("Add New Item", "Create", "Items")</li>
+                                                                                <li>@Html.ActionLink("View all Items", "Index", "Items")</li>
+                                                                                <li>@Html.ActionLink("View all Orders", "Customer_Orders", "Orders")</li>
+                                                                            </ul>
+                                                                        </li>
+ } @*<li>@Html.ActionLink("About", "About", "Home")</li>
+                                                                <li>@Html.ActionLink("Contact", "Contact", "Home")</li>*@
+
+                </ul>
+                @Html.Partial("_LoginPartial")
+            </div>
+        </div>
+    </div>
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
+        <footer>
+            <p>&copy; @DateTime.Now.Year -Senorita Cruise</p>
+        </footer>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>
